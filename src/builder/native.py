@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from itertools import chain
 
-import byte_code as bc
-import condition
+from . import byte_code as bc
+from .. import condition
 
 
-class NativeBuilder(object):
+class Native(object):
   _lib = {}
   _operation = {}
 
@@ -42,20 +42,20 @@ class NativeBuilder(object):
 
     return bc.compile_code(code, globals())
 
-@NativeBuilder.new_handler(condition.IfEmpty)
+@Native.new_handler(condition.Empty)
 def if_empty(build, term, level):
   return [
-    bc.load_const(NativeBuilder),
+    bc.load_const(Native),
   ]
 
-@NativeBuilder.new_handler(condition.IfValue)
+@Native.new_handler(condition.Value)
 def if_value(build, term, level):
   return [
     bc.load_const(term.content),
   ]
 
 
-@NativeBuilder.new_handler(condition.IfField)
+@Native.new_handler(condition.Field)
 def if_field(build, term, level):
   def parse():
     for attr in term.path:
@@ -65,13 +65,13 @@ def if_field(build, term, level):
     bc.load_fast('level_%s' % (level - term.depth)),
   ] + list(parse())
 
-@NativeBuilder.new_handler(condition.IfNot)
+@Native.new_handler(condition.Not)
 def if_not(build, term, level):
   return build(term.content, level) + [
     bc.unary_not(),
   ]
 
-@NativeBuilder.new_handler(condition.IfAnd)
+@Native.new_handler(condition.And)
 def if_not(build, terms, level):
   label = bc.label()
 
@@ -86,7 +86,7 @@ def if_not(build, terms, level):
     bc.label(label),
   ]
 
-@NativeBuilder.new_handler(condition.IfOr)
+@Native.new_handler(condition.Or)
 def if_not(build, terms, level):
   label = bc.label()
 
@@ -102,13 +102,13 @@ def if_not(build, terms, level):
   ]
 
 
-@NativeBuilder.new_handler(condition.IfAttr)
+@Native.new_handler(condition.Attr)
 def if_attr(build, terms, level):
   field = terms.attr
   term = terms.content
 
-  if NativeBuilder._operation.has_key(field):
-    return NativeBuilder._operation[field](build, term, level)
+  if Native._operation.has_key(field):
+    return Native._operation[field](build, term, level)
   else:
     return [
       bc.load_fast('level_%s' % (level)),
@@ -117,14 +117,14 @@ def if_attr(build, terms, level):
     ] + build(term, level + 1)
 
 
-NativeBuilder.new_operation('EQ')('==')
-NativeBuilder.new_operation('NE')('!=')
-NativeBuilder.new_operation('GT')('>')
-NativeBuilder.new_operation('GE')('>=')
-NativeBuilder.new_operation('LT')('<')
-NativeBuilder.new_operation('LE')('<=')
+Native.new_operation('EQ')('==')
+Native.new_operation('NE')('!=')
+Native.new_operation('GT')('>')
+Native.new_operation('GE')('>=')
+Native.new_operation('LT')('<')
+Native.new_operation('LE')('<=')
 
-@NativeBuilder.new_operation('COUNT')
+@Native.new_operation('COUNT')
 def op_count(build, term, level):
   return [
     bc.load_const(len),
@@ -133,7 +133,7 @@ def op_count(build, term, level):
     bc.store_fast('level_%s' % (level + 1)),
   ] + build(term, level + 1)
 
-@NativeBuilder.new_operation('ALL')
+@Native.new_operation('ALL')
 def op_all(build, term, level):
   iter_label = bc.label()
   loop_label = bc.label()
@@ -155,7 +155,7 @@ def op_all(build, term, level):
     bc.label(exit_label),
   ]
 
-@NativeBuilder.new_operation('ANY')
+@Native.new_operation('ANY')
 def op_all(build, term, level):
   iter_label = bc.label()
   loop_label = bc.label()
