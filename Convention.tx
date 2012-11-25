@@ -1,0 +1,12 @@
+Indentation:
+  Arguments of call: 4
+  Other: 2
+
+Names:
+  Constant - Caps + Underscore
+  Function - verb + CamelCase
+  Variables - LowerCase + Underscore
+  Class - CamelCase
+  Method - verb + CamelCase
+  Attribute - LowerCase + Underscore
+

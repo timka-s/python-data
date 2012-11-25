@@ -5,7 +5,6 @@ from operator import itemgetter
 from ._if import If
 
 
-@If._type('and')
 class And(If):
   content = property(itemgetter(0))
 
@@ -15,11 +14,11 @@ class And(If):
     data = tuple(merge(*data))
 
     if len(data) == 0:
-      return cls._type_empty()
+      return cls._Empty()
     elif len(data) == 1:
       return data[0]
     else:
-      return cls._new(data)
+      return cls._create(data)
 
   def __new__(cls, *args):
     return cls._make(cls._parse(item) for item in args)

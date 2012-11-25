@@ -5,25 +5,32 @@ from . import byte_code as bc
 from .. import condition
 
 
+def loadLevel(level):
+  return bc.loadFast('level_%s' % level)
+
+def storeLevel(level):
+  return bc.storeFast('level_%s' % level)
+
+
 class Native(object):
   _lib = {}
   _operation = {}
 
   @classmethod
-  def new_handler(cls, act):
-    def handler(fn):
+  def _newType(cls, act):
+    def _type(fn):
       cls._lib[act] = fn
-    return handler
+    return _type
 
   @classmethod
-  def new_operation(cls, act):
+  def _newOperation(cls, act):
     def operation(op):
       if callable(op):
         res = op
       else:
-        op = [bc.compare_op(op)]
+        op = [bc.compareOp(op)]
         res = lambda build, term, level: \
-            [bc.load_fast('level_%s' % (level))] + build(term, level) + op
+            [loadLevel(level)] + build(term, level) + op
       cls._operation[act] = res
     return operation
 
@@ -34,75 +41,75 @@ class Native(object):
   @classmethod
   def make(cls, term):
     code = [
-      bc.load_fast('obj'),
-      bc.store_fast('level_0'),
+      bc.loadFast('obj'),
+      storeLevel(0),
     ] + cls.build(term, 0) + [
-      bc.return_value(),
+      bc.returnValue(),
     ]
 
-    return bc.compile_code(code, globals())
+    return bc.compileCode(code, globals())
 
-@Native.new_handler(condition.Empty)
+@Native._newType(condition.Empty)
 def if_empty(build, term, level):
   return [
-    bc.load_const(Native),
+    bc.loadConst(Native),
   ]
 
-@Native.new_handler(condition.Value)
+@Native._newType(condition.Value)
 def if_value(build, term, level):
   return [
-    bc.load_const(term.content),
+    bc.loadConst(term.content),
   ]
 
 
-@Native.new_handler(condition.Field)
+@Native._newType(condition.Field)
 def if_field(build, term, level):
   def parse():
     for attr in term.path:
-      yield bc.load_attr(attr)
+      yield bc.loadAttr(attr)
     
   return [
-    bc.load_fast('level_%s' % (level - term.depth)),
+    loadLevel(level - term.depth),
   ] + list(parse())
 
-@Native.new_handler(condition.Not)
+@Native._newType(condition.Not)
 def if_not(build, term, level):
   return build(term.content, level) + [
-    bc.unary_not(),
+    bc.unaryNot(),
   ]
 
-@Native.new_handler(condition.And)
+@Native._newType(condition.And)
 def if_not(build, terms, level):
-  label = bc.label()
+  label = bc.makeLabel()
 
   def parse():
     for term in terms.content:
       yield build(term, level) + [
-        bc.jump_if_false_or_pop(label),
+        bc.jumpIfFalseOrPop(label),
       ]
 
   return list(chain.from_iterable(parse())) + [
-    bc.load_const(True),
-    bc.label(label),
+    bc.loadConst(True),
+    bc.putLabel(label),
   ]
 
-@Native.new_handler(condition.Or)
+@Native._newType(condition.Or)
 def if_not(build, terms, level):
-  label = bc.label()
+  label = bc.makeLabel()
 
   def parse():
     for term in terms.content:
       yield build(term, level) + [
-        bc.jump_if_true_or_pop(label),
+        bc.jumpIfTrueOrPop(label),
       ]
 
   return list(chain.from_iterable(parse())) + [
-    bc.load_const(False),
-    bc.label(label),
+    bc.loadConst(False),
+    bc.putLabel(label),
   ]
 
 
-@Native.new_handler(condition.Attr)
+@Native._newType(condition.Attr)
 def if_attr(build, terms, level):
   field = terms.attr
   term = terms.content
@@ -111,68 +118,69 @@ def if_attr(build, terms, level):
     return Native._operation[field](build, term, level)
   else:
     return [
-      bc.load_fast('level_%s' % (level)),
-      bc.load_attr(field),
-      bc.store_fast('level_%s' % (level + 1)),
+      loadLevel(level),
+      bc.loadAttr(field),
+      storeLevel(level + 1),
     ] + build(term, level + 1)
 
 
-Native.new_operation('EQ')('==')
-Native.new_operation('NE')('!=')
-Native.new_operation('GT')('>')
-Native.new_operation('GE')('>=')
-Native.new_operation('LT')('<')
-Native.new_operation('LE')('<=')
+Native._newOperation('EQ')('==')
+Native._newOperation('NE')('!=')
+Native._newOperation('GT')('>')
+Native._newOperation('GE')('>=')
+Native._newOperation('LT')('<')
+Native._newOperation('LE')('<=')
+Native._newOperation('IN')('in')
 
-@Native.new_operation('COUNT')
+@Native._newOperation('COUNT')
 def op_count(build, term, level):
   return [
-    bc.load_const(len),
-    bc.load_fast('level_%s' % (level)),
-    bc.call_function(1),
-    bc.store_fast('level_%s' % (level + 1)),
+    bc.loadConst(len),
+    loadLevel(level),
+    bc.callFunction(1),
+    storeLevel(level + 1),
   ] + build(term, level + 1)
 
-@Native.new_operation('ALL')
+@Native._newOperation('ALL')
 def op_all(build, term, level):
-  iter_label = bc.label()
-  loop_label = bc.label()
-  exit_label = bc.label()
+  iter_label = bc.makeLabel()
+  loop_label = bc.makeLabel()
+  exit_label = bc.makeLabel()
 
   return [
-    bc.load_fast('level_%s' % (level)),
-    bc.get_iter(),
-    bc.label(iter_label),
-    bc.for_iter(loop_label),
-    bc.store_fast('level_%s' % (level + 1)),
+    loadLevel(level),
+    bc.getIter(),
+    bc.putLabel(iter_label),
+    bc.forIter(loop_label),
+    storeLevel(level + 1),
   ] + build(term, level + 1) + [
-    bc.pop_jump_if_true(iter_label),
-    bc.pop_top(), # Remove the iterator
-    bc.load_const(False),
-    bc.jump_absolute(exit_label),
-    bc.label(loop_label),
-    bc.load_const(True),
-    bc.label(exit_label),
+    bc.popJumpIfTrue(iter_label),
+    bc.popTop(), # Remove the iterator
+    bc.loadConst(False),
+    bc.jumpAbsolute(exit_label),
+    bc.putLabel(loop_label),
+    bc.loadConst(True),
+    bc.putLabel(exit_label),
   ]
 
-@Native.new_operation('ANY')
+@Native._newOperation('ANY')
 def op_all(build, term, level):
-  iter_label = bc.label()
-  loop_label = bc.label()
-  exit_label = bc.label()
+  iter_label = bc.makeLabel()
+  loop_label = bc.makeLabel()
+  exit_label = bc.makeLabel()
 
   return [
-    bc.load_fast('level_%s' % (level)),
-    bc.get_iter(),
-    bc.label(iter_label),
-    bc.for_iter(loop_label),
-    bc.store_fast('level_%s' % (level + 1)),
+    loadLevel(level),
+    bc.getIter(),
+    bc.putLabel(iter_label),
+    bc.forIter(loop_label),
+    storeLevel(level + 1),
   ] + build(term, level + 1) + [
-    bc.pop_jump_if_false(iter_label),
-    bc.pop_top(), # Remove the iterator
-    bc.load_const(True),
-    bc.jump_absolute(exit_label),
-    bc.label(loop_label),
-    bc.load_const(False),
-    bc.label(exit_label),
+    bc.popJumpIfFalse(iter_label),
+    bc.popTop(), # Remove the iterator
+    bc.loadConst(True),
+    bc.jumpAbsolute(exit_label),
+    bc.putLabel(loop_label),
+    bc.loadConst(False),
+    bc.putLabel(exit_label),
   ]

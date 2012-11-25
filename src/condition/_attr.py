@@ -5,7 +5,6 @@ from operator import itemgetter
 from ._if import If
 
 
-@If._type('attr')
 class Attr(If):
   attr = property(itemgetter(0))
   content = property(itemgetter(1))
@@ -29,9 +28,9 @@ class Attr(If):
         data = chain((item,), data)
 
       for attr, items in data:
-        yield cls._new(attr, cls._make(level, items))
+        yield cls._create(attr, cls._make(level, items))
 
-    return cls._type_and._make(parse(level, data))
+    return cls._And._make(parse(level, data))
 
   def __new__(cls, **kwargs):
     def parse(data):

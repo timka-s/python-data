@@ -4,7 +4,6 @@ from operator import itemgetter
 from ._if import If
 
 
-@If._type('not')
 class Not(If):
   content = property(itemgetter(0))
 
@@ -13,7 +12,7 @@ class Not(If):
     if isinstance(data, cls):
       return data.content
     else:
-      return cls._new(data)
+      return cls._create(data)
 
   def __new__(cls, data):
     return cls._make(cls._parse(data))

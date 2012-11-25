@@ -8,7 +8,7 @@ from byteplay import (
   POP_JUMP_IF_TRUE, POP_JUMP_IF_FALSE, RETURN_VALUE)
 
 
-def compile_code(code, gobj = globals()):
+def compileCode(code, gobj = globals()):
   return FunctionType(
       Code(
           code, tuple(), ('obj',), False, False, True,
@@ -17,56 +17,56 @@ def compile_code(code, gobj = globals()):
       gobj
   )
 
-def label(label = None):
-  if label is None:
-    return Label()
-  else:
-    return (label, None)
+def makeLabel():
+  return Label()
 
-def pop_top():
+def putLabel(label):
+  return (label, None)
+
+def popTop():
   return (POP_TOP, None)
 
-def load_fast(vname):
+def loadFast(vname):
   return (LOAD_FAST, vname)
 
-def store_fast(vname):
+def storeFast(vname):
   return (STORE_FAST, vname)
 
-def load_const(val):
+def loadConst(val):
   return (LOAD_CONST, val)
 
-def load_attr(attr):
+def loadAttr(attr):
   return (LOAD_ATTR, attr)
 
-def get_iter():
+def getIter():
   return (GET_ITER, None)
 
-def for_iter(label):
+def forIter(label):
   return (FOR_ITER, label)
 
-def unary_not():
+def unaryNot():
   return (UNARY_NOT, None)
 
-def compare_op(op):
+def compareOp(op):
   return (COMPARE_OP, op)
 
-def call_function(arg_count):
+def callFunction(arg_count):
   return (CALL_FUNCTION, arg_count)
 
-def jump_if_true_or_pop(label):
+def jumpIfTrueOrPop(label):
   return (JUMP_IF_TRUE_OR_POP, label)
 
-def jump_if_false_or_pop(label):
+def jumpIfFalseOrPop(label):
   return (JUMP_IF_FALSE_OR_POP, label)
 
-def jump_absolute(label):
+def jumpAbsolute(label):
   return (JUMP_ABSOLUTE, label)
 
-def pop_jump_if_true(label):
+def popJumpIfTrue(label):
   return (POP_JUMP_IF_TRUE, label)
 
-def pop_jump_if_false(label):
+def popJumpIfFalse(label):
   return (POP_JUMP_IF_FALSE, label)
 
-def return_value():
+def returnValue():
   return (RETURN_VALUE, None)
