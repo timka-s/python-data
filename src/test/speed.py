@@ -2,9 +2,9 @@
 
 from timeit import timeit
 
-from ...builder import Native
-from ...condition import If, Field
-from ..mock_cls import SimpleNamespace as SN
+from ..builder import Native
+from ..condition import If, Field
+from .mock_cls import SimpleNamespace as SN
 
 
 def _print(key):

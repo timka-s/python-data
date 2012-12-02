@@ -8,4 +8,5 @@ class Empty(If):
 
   def __repr__(self):
     return 'is NOTHING'
+
 Empty._instance = Empty._create()

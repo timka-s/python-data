@@ -19,3 +19,8 @@ class Not(If):
 
   def __repr__(self):
     return '~%s' % str(self.content)
+
+
+@If._method
+def __invert__(self):
+  return Not._make(self)

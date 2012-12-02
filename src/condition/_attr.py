@@ -3,6 +3,7 @@ from itertools import groupby, chain
 from operator import itemgetter
 
 from ._if import If
+from ._and import And
 
 
 class Attr(If):
@@ -30,7 +31,7 @@ class Attr(If):
       for attr, items in data:
         yield cls._create(attr, cls._make(level, items))
 
-    return cls._And._make(parse(level, data))
+    return And._make(parse(level, data))
 
   def __new__(cls, **kwargs):
     def parse(data):
@@ -42,3 +43,15 @@ class Attr(If):
 
   def __repr__(self):
     return '.%s%s' % (self.attr, self.content)
+
+
+@If._method
+@staticmethod
+def __new__(cls, *args, **kwargs):
+  def parse():
+    if len(args) <> 0:
+      yield And(*args)
+    if len(kwargs) <> 0:
+      yield Attr(**kwargs)
+
+  return And._make(parse())
