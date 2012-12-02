@@ -61,17 +61,6 @@ def if_value(build, term, level):
     bc.loadConst(term.content),
   ]
 
-
-@Native._newType(condition.Field)
-def if_field(build, term, level):
-  def parse():
-    for attr in term.path:
-      yield bc.loadAttr(attr)
-    
-  return [
-    loadLevel(level - term.depth),
-  ] + list(parse())
-
 @Native._newType(condition.Not)
 def if_not(build, term, level):
   return build(term.content, level) + [
@@ -79,7 +68,7 @@ def if_not(build, term, level):
   ]
 
 @Native._newType(condition.And)
-def if_not(build, terms, level):
+def if_and(build, terms, level):
   label = bc.makeLabel()
 
   def parse():
@@ -94,7 +83,7 @@ def if_not(build, terms, level):
   ]
 
 @Native._newType(condition.Or)
-def if_not(build, terms, level):
+def if_or(build, terms, level):
   label = bc.makeLabel()
 
   def parse():
@@ -107,7 +96,6 @@ def if_not(build, terms, level):
     bc.loadConst(False),
     bc.putLabel(label),
   ]
-
 
 @Native._newType(condition.Attr)
 def if_attr(build, terms, level):
@@ -123,6 +111,15 @@ def if_attr(build, terms, level):
       storeLevel(level + 1),
     ] + build(term, level + 1)
 
+@Native._newType(condition.Field)
+def if_field(build, term, level):
+  def parse():
+    for attr in term.path:
+      yield bc.loadAttr(attr)
+    
+  return [
+    loadLevel(level - term.depth),
+  ] + list(parse())
 
 Native._newOperation('EQ')('==')
 Native._newOperation('NE')('!=')
