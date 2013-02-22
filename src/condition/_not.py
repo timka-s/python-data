@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from operator import itemgetter
 
-from ._if import If
+from ._is import Is
 
 
-class Not(If):
+class Not(Is):
   content = property(itemgetter(0))
 
   @classmethod
@@ -21,6 +21,6 @@ class Not(If):
     return '~%s' % str(self.content)
 
 
-@If._method
+@Is._method
 def __invert__(self):
   return Not._make(self)

@@ -8,4 +8,4 @@ class SimpleNamespace:
   def __repr__(self):
     keys = reversed(self.__dict__.keys())
     items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
-    return "{}({})".format(type(self).__name__, ", ".join(items))
+    return "{}(\n    {})".format(type(self).__name__, ",\n    ".join(items))

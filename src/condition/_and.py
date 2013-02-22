@@ -2,12 +2,12 @@
 from heapq import merge
 from operator import itemgetter
 
-from ._if import If
+from ._is import Is
 from ._empty import Empty
 from ._not import Not
 
 
-class And(If):
+class And(Is):
   content = property(itemgetter(0))
 
   @classmethod
@@ -29,15 +29,15 @@ class And(If):
     return '(%s)' % (' && '.join(str(item) for item in self.content))
 
 
-@If._method
+@Is._method
 @staticmethod
 def __new__(cls, *args):
   return And(*args)
 
-@If._method
+@Is._method
 def __and__(self, other):
   return And(self, other)
 
-@If._method
+@Is._method
 def __sub__(self, other):
   return And._make(self, Not(other))

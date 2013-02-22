@@ -2,11 +2,11 @@
 from itertools import groupby, chain
 from operator import itemgetter
 
-from ._if import If
+from ._is import Is
 from ._and import And
 
 
-class Attr(If):
+class Attr(Is):
   attr = property(itemgetter(0))
   content = property(itemgetter(1))
 
@@ -45,7 +45,7 @@ class Attr(If):
     return '.%s%s' % (self.attr, self.content)
 
 
-@If._method
+@Is._method
 @staticmethod
 def __new__(cls, *args, **kwargs):
   def parse():

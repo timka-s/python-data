@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from operator import itemgetter
 
-from ._if import If
+from ._is import Is
 
 
-class Value(If):
+class Value(Is):
   content = property(itemgetter(0))
 
   def __new__(cls, data):
@@ -14,10 +14,10 @@ class Value(If):
     return '=`%s`' % str(self.content)
 
 
-@If._method
+@Is._method
 @classmethod
 def _parse(cls, data):
-  if isinstance(data, If):
+  if isinstance(data, Is):
     return data
   else:
     return Value._create(data)

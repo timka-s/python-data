@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from operator import itemgetter
 
-from ._if import If
+from ._is import Is
 
 
-class Field(If):
+class Field(Is):
   source = property(itemgetter(0))
   depth = property(itemgetter(1))
   path = property(itemgetter(2))

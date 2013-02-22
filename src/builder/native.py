@@ -39,7 +39,7 @@ class Native(object):
     return cls._lib[type(term)](cls.build, term, level)
 
   @classmethod
-  def make(cls, term):
+  def makeWhich(cls, term):
     code = [
       bc.loadFast('obj'),
       storeLevel(0),
@@ -50,25 +50,25 @@ class Native(object):
     return bc.compileCode(code, globals())
 
 @Native._newType(condition.Empty)
-def if_empty(build, term, level):
+def is_empty(build, term, level):
   return [
     bc.loadConst(Native),
   ]
 
 @Native._newType(condition.Value)
-def if_value(build, term, level):
+def is_value(build, term, level):
   return [
     bc.loadConst(term.content),
   ]
 
 @Native._newType(condition.Not)
-def if_not(build, term, level):
+def is_not(build, term, level):
   return build(term.content, level) + [
     bc.unaryNot(),
   ]
 
 @Native._newType(condition.And)
-def if_and(build, terms, level):
+def is_and(build, terms, level):
   label = bc.makeLabel()
 
   def parse():
@@ -83,7 +83,7 @@ def if_and(build, terms, level):
   ]
 
 @Native._newType(condition.Or)
-def if_or(build, terms, level):
+def is_or(build, terms, level):
   label = bc.makeLabel()
 
   def parse():
@@ -98,7 +98,7 @@ def if_or(build, terms, level):
   ]
 
 @Native._newType(condition.Attr)
-def if_attr(build, terms, level):
+def is_attr(build, terms, level):
   field = terms.attr
   term = terms.content
 
@@ -112,7 +112,7 @@ def if_attr(build, terms, level):
     ] + build(term, level + 1)
 
 @Native._newType(condition.Field)
-def if_field(build, term, level):
+def is_field(build, term, level):
   def parse():
     for attr in term.path:
       yield bc.loadAttr(attr)

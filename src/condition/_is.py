@@ -2,7 +2,7 @@
 from types import FunctionType
 
 
-class If(tuple):
+class Is(tuple):
   @classmethod
   def _method(cls, fn):
     if type(fn) == FunctionType:
@@ -17,4 +17,4 @@ class If(tuple):
     return tuple.__new__(cls, args)
 
   def __new__(cls):
-    raise TypeError("This constructor is abstract")
+    raise TypeError('This constructor is abstract')

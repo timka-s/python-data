@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from ._if import If
+from ._is import Is
 
 
-class Empty(If):
+class Empty(Is):
   def __new__(cls):
     return cls._instance
 

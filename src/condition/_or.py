@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from operator import itemgetter
 
-from ._if import If
+from ._is import Is
 from ._and import And
 
 
-class Or(If):
+class Or(Is):
   content = property(itemgetter(0))
 
   _make = And._make
@@ -15,10 +15,10 @@ class Or(If):
     return '(%s)' % (' || '.join(str(item) for item in self.content))
 
 
-@If._method
+@Is._method
 def __or__(self, other):
   return Or(self, other)
 
-@If._method
+@Is._method
 def __add__(self, other):
   return Or(self, other)

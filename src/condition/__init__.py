@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ._if import If
+from ._is import Is
 from ._empty import Empty
 from ._value import Value
 from ._not import Not
